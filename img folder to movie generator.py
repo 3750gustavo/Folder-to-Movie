@@ -8,7 +8,7 @@ ensure_package('PIL', 'Pillow')
 # import all required modules
 from moviepy.editor import ImageSequenceClip
 import PySimpleGUI as sg
-import os,tempfile,random,json
+import os,tempfile,random,json,sys
 from PIL import Image
 import moviepy.editor as mp
 from concurrent.futures import ThreadPoolExecutor
@@ -16,7 +16,13 @@ from typing import List, Tuple, Optional, Dict
 from tkinter import filedialog
 
 def load_translations(language):
-    with open(f"translations/{language}.json", "r", encoding="utf-8") as file:
+    if hasattr(sys, '_MEIPASS'):
+        # When running as an executable, use the _MEIPASS directory
+        file_path = os.path.join(sys._MEIPASS, 'translations', f"{language}.json")
+    else:
+        # When running as a script, use the current directory
+        file_path = os.path.join(os.getcwd(), 'translations', f"{language}.json")
+    with open(file_path, "r", encoding="utf-8") as file:
         return json.load(file)
 
 def get_translation(key, translations):
