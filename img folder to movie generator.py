@@ -110,8 +110,9 @@ def create_layout() -> List[List[sg.Element]]:
 
 def process_video(folder_path: str, duration: float, num_loops: int, shuffle_images: bool) -> Optional[mp.VideoFileClip]:
     """Process images and create video clip."""
+    supported_extensions = ('.png', '.jpg', '.jpeg', '.bmp', '.tiff', '.webp', '.gif')
     images = [os.path.join(root, file) for root, _, files in os.walk(folder_path)
-              for file in files if file.lower().endswith(('.png', '.jpg', '.jpeg'))]
+              for file in files if file.lower().endswith(supported_extensions)]
 
     if not images:
         sg.popup_error("No images found in the selected folder.")
