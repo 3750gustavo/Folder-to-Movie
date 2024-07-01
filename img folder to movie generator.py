@@ -76,67 +76,93 @@ def process_images(images: List[str], avg_width: int, avg_height: int) -> List[s
     with ThreadPoolExecutor() as executor:
         return list(executor.map(lambda img: resize_image(img, avg_width, avg_height), images))
 
-def main():
-    layout = [
-        [sg.Text("Select a folder with image frames:"), sg.Input(), sg.FolderBrowse()],
-        [sg.Text("Customization Options:"), sg.Text("Duration of Image Display (in seconds):"), sg.InputText()],
-        [sg.Text("Number of Loops (default is 1):"), sg.InputText()],
-        [sg.Checkbox("Shuffle Images per Loop"), sg.OK(), sg.Cancel()]
+def validate_numeric_input(value: str, min_value: float = 0, default: float = None) -> Optional[float]:
+    """Validate if the input is a positive number."""
+    if not value and default is not None:
+        return default
+    try:
+        num = float(value)
+        return num if num >= min_value else default
+    except ValueError:
+        return default
+
+def validate_integer_input(value: str, min_value: int = 1, default: int = None) -> Optional[int]:
+    """Validate if the input is a positive integer."""
+    if not value and default is not None:
+        return default
+    try:
+        num = float(value)  # First convert to float to handle decimal inputs
+        num = int(num)  # Then convert to int, effectively rounding down
+        return num if num >= min_value else default
+    except ValueError:
+        return default
+
+def create_layout() -> List[List[sg.Element]]:
+    """Create the PySimpleGUI layout with default values and tooltips."""
+    return [
+        [sg.Text("Select a folder with image frames:"), sg.Input(key="-FOLDER-"), sg.FolderBrowse()],
+        [sg.Text("Duration of Image Display (seconds):"),
+         sg.InputText("0.5", key="-DURATION-", tooltip="Enter a positive number for image display duration")],
+        [sg.Text("Number of Loops:"),
+         sg.InputText("1", key="-LOOPS-", tooltip="Enter a positive integer for the number of video loops")],
+        [sg.Checkbox("Shuffle Images per Loop", key="-SHUFFLE-"), sg.OK(), sg.Cancel()]
     ]
 
-    window = sg.Window("Image to Video Converter", layout)
-    event, values = window.read()
-    window.close()
-
-
-    if event in (sg.WINDOW_CLOSED, 'Cancel'):
-        raise SystemExit("User cancelled or closed the window.")
-
-    folder_path = values[0]
-    duration = float(values[1]) if values[1] else 1  # Ensuring default values if not provided
-    num_loops = int(values[2]) if values[2] else 1
-    shuffle_images = values[3]
-
+def process_video(folder_path: str, duration: float, num_loops: int, shuffle_images: bool) -> Optional[mp.VideoFileClip]:
+    """Process images and create video clip."""
     images = [os.path.join(root, file) for root, _, files in os.walk(folder_path)
               for file in files if file.lower().endswith(('.png', '.jpg', '.jpeg'))]
 
     if not images:
-        sg.popup("No images found in the folder.")
-        return
+        sg.popup_error("No images found in the selected folder.")
+        return None
 
     dimensions = [get_image_dimensions(img) for img in images]
     avg_width, avg_height = calculate_average_dimensions(dimensions)
     resized_images = process_images(images, avg_width, avg_height)
 
-        # Define durations for each image frame in the video
     durations = [duration] * len(resized_images)
     clips = []
 
-    # Loop through the number of loops specified by the user
     for _ in range(num_loops):
         if shuffle_images:
             random.shuffle(resized_images)
-
-        # Create a video clip from the resized (and possibly shuffled) images
         clip = ImageSequenceClip(resized_images, durations=durations)
         clips.append(clip)
 
-    # Concatenate clips if more than one loop is specified
-    if len(clips) > 1:
-        final_clip = mp.concatenate_videoclips(clips)
-    else:
-        final_clip = clips[0]
+    return mp.concatenate_videoclips(clips) if len(clips) > 1 else clips[0]
 
-    # Prompt the user for a save location and file name for the output video
-    save_path = sg.popup_get_file("Save video file", save_as=True, default_extension=".mp4")
-    if save_path:
-        final_clip.write_videofile(save_path, fps=30)
+def main():
+    sg.theme('DefaultNoMoreNagging')
+    layout = create_layout()
+    window = sg.Window("Image to Video Converter", layout)
 
-        # Cleanup: Delete temporary image files
-        for img_path in resized_images:
-            os.unlink(img_path)
-    else:
-        sg.popup("Operation cancelled. No video was saved.")
+    while True:
+        event, values = window.read()
+        if event in (sg.WINDOW_CLOSED, 'Cancel'):
+            break
+
+        if event == 'OK':
+            folder_path = values["-FOLDER-"]
+            duration = validate_numeric_input(values["-DURATION-"], min_value=0.1, default=0.5)
+            num_loops = validate_integer_input(values["-LOOPS-"], min_value=1, default=1)
+            shuffle_images = values["-SHUFFLE-"]
+
+            if not folder_path:
+                sg.popup_error("Please select a folder with images.")
+                continue
+
+            final_clip = process_video(folder_path, duration, num_loops, shuffle_images)
+
+            if final_clip:
+                save_path = sg.popup_get_file("Save video file", save_as=True, default_extension=".mp4")
+                if save_path:
+                    final_clip.write_videofile(save_path, fps=30)
+                    sg.popup("Video saved successfully!")
+                else:
+                    sg.popup("Operation cancelled. No video was saved.")
+
+    window.close()
 
 if __name__ == "__main__":
     main()
