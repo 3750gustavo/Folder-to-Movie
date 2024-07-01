@@ -1,5 +1,4 @@
 # img folder to movie generator.py
-
 from package_manager import ensure_package
 
 ensure_package('moviepy')
@@ -14,6 +13,7 @@ from PIL import Image
 import moviepy.editor as mp
 from concurrent.futures import ThreadPoolExecutor
 from typing import List, Tuple, Optional
+from tkinter import filedialog
 
 def calculate_average_dimensions(images: List[Tuple[int, int]]) -> Tuple[int, int]:
     total_width = total_height = 0
@@ -111,10 +111,10 @@ def create_layout() -> List[List[sg.Element]]:
     return [
         [sg.Text("Select a folder with image frames:"), sg.Input(key="-FOLDER-"), sg.FolderBrowse()],
         [sg.Text("Duration of Image Display (seconds):"),
-         sg.InputText("0.5", key="-DURATION-", tooltip="Enter a positive number for image display duration")],
+         sg.InputText("0.5", key="-DURATION-", tooltip="Enter a number for how many seconds each image will be displayed before changing to the next image")],
         [sg.Text("Number of Loops:"),
-         sg.InputText("1", key="-LOOPS-", tooltip="Enter a positive integer for the number of video loops")],
-        [sg.Checkbox("Shuffle Images per Loop", key="-SHUFFLE-"), sg.OK(), sg.Cancel()]
+         sg.InputText("1", key="-LOOPS-", tooltip="Enter a number of times all images inside the folder should be displayed, value will be converted to integer")],
+        [sg.Checkbox("Shuffle Images per Loop", key="-SHUFFLE-"), sg.OK(button_text='generate video'), sg.Cancel()]
     ]
 
 def process_video(folder_path: str, duration: float, num_loops: int, shuffle_images: bool) -> Optional[mp.VideoFileClip]:
@@ -165,7 +165,7 @@ def main():
             final_clip = process_video(folder_path, duration, num_loops, shuffle_images)
 
             if final_clip:
-                save_path = sg.popup_get_file("Save video file", save_as=True, default_extension=".mp4")
+                save_path = filedialog.asksaveasfilename(defaultextension=".mp4", filetypes=[("MP4 files", "*.mp4")])
                 if save_path:
                     final_clip.write_videofile(save_path, fps=30)
                     sg.popup("Video saved successfully!")
