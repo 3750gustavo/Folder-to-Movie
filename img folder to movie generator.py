@@ -4,8 +4,9 @@ import os,tempfile,random
 from PIL import Image
 import moviepy.editor as mp
 from concurrent.futures import ThreadPoolExecutor
+from typing import List, Tuple, Optional
 
-def calculate_average_dimensions(images):
+def calculate_average_dimensions(images: List[Tuple[int, int]]) -> Tuple[int, int]:
     total_width = total_height = 0
     for width, height in images:
         total_width += width
@@ -14,7 +15,7 @@ def calculate_average_dimensions(images):
     avg_height = total_height // len(images)
     return avg_width, avg_height
 
-def resize_image(image_path, avg_width, avg_height):
+def resize_image(image_path: str, avg_width: int, avg_height: int) -> str:
     with Image.open(image_path) as img:
         width, height = img.size
 
@@ -67,11 +68,11 @@ def resize_image(image_path, avg_width, avg_height):
         bordered_img.save(temp_file.name, 'JPEG')
         return temp_file.name
 
-def get_image_dimensions(image_path):
+def get_image_dimensions(image_path: str) -> Tuple[int, int]:
     with Image.open(image_path) as img:
         return img.size
 
-def process_images(images, avg_width, avg_height):
+def process_images(images: List[str], avg_width: int, avg_height: int) -> List[str]:
     with ThreadPoolExecutor() as executor:
         return list(executor.map(lambda img: resize_image(img, avg_width, avg_height), images))
 
