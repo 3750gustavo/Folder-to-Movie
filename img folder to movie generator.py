@@ -1,3 +1,12 @@
+# img folder to movie generator.py
+
+from package_manager import ensure_package
+
+ensure_package('moviepy')
+ensure_package('PySimpleGUI', 'PySimpleGUI==4.60.4')
+ensure_package('PIL', 'Pillow')
+
+# import all required modules
 from moviepy.editor import ImageSequenceClip
 import PySimpleGUI as sg
 import os,tempfile,random
