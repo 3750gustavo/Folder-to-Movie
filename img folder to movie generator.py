@@ -8,12 +8,19 @@ ensure_package('PIL', 'Pillow')
 # import all required modules
 from moviepy.editor import ImageSequenceClip
 import PySimpleGUI as sg
-import os,tempfile,random
+import os,tempfile,random,json
 from PIL import Image
 import moviepy.editor as mp
 from concurrent.futures import ThreadPoolExecutor
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Dict
 from tkinter import filedialog
+
+def load_translations(language):
+    with open(f"translations/{language}.json", "r", encoding="utf-8") as file:
+        return json.load(file)
+
+def get_translation(key, translations):
+    return translations.get(key, key)
 
 def calculate_average_dimensions(images: List[Tuple[int, int]]) -> Tuple[int, int]:
     total_width = total_height = 0
@@ -106,15 +113,18 @@ def validate_integer_input(value: str, min_value: int = 1, default: int = None) 
     except ValueError:
         return default
 
-def create_layout() -> List[List[sg.Element]]:
+def create_layout(translations) -> List[List[sg.Element]]:
     """Create the PySimpleGUI layout with default values and tooltips."""
     return [
-        [sg.Text("Select a folder with image frames:"), sg.Input(key="-FOLDER-"), sg.FolderBrowse()],
-        [sg.Text("Duration of Image Display (seconds):"),
-         sg.InputText("0.5", key="-DURATION-", tooltip="Enter a number for how many seconds each image will be displayed before changing to the next image")],
-        [sg.Text("Number of Loops:"),
-         sg.InputText("1", key="-LOOPS-", tooltip="Enter a number of times all images inside the folder should be displayed, value will be converted to integer")],
-        [sg.Checkbox("Shuffle Images per Loop", key="-SHUFFLE-"), sg.OK(button_text='generate video'), sg.Cancel()]
+        [sg.Text(get_translation("select_folder", translations), key="-SELECT_FOLDER-"), sg.Input(key="-FOLDER-"), sg.FolderBrowse(button_text=get_translation("browse", translations), key="-BROWSE-")],
+        [sg.Text(get_translation("display_duration", translations), key="-DISPLAY_DURATION-"),
+         sg.InputText("0.5", key="-DURATION-", tooltip=get_translation("duration_tooltip", translations))],
+        [sg.Text(get_translation("number_of_loops", translations), key="-NUMBER_OF_LOOPS-"),
+         sg.InputText("1", key="-LOOPS-", tooltip=get_translation("loops_tooltip", translations))],
+        [sg.Checkbox(get_translation("shuffle_images", translations), key="-SHUFFLE-"),
+         sg.Button(get_translation("generate_video", translations), key="OK"),
+         sg.Button(get_translation("cancel", translations), key="Cancel"),
+         sg.Button(get_translation("toggle_language", translations), key="-TOGGLE_LANGUAGE-")]
     ]
 
 def process_video(folder_path: str, duration: float, num_loops: int, shuffle_images: bool) -> Optional[mp.VideoFileClip]:
@@ -142,15 +152,37 @@ def process_video(folder_path: str, duration: float, num_loops: int, shuffle_ima
 
     return mp.concatenate_videoclips(clips) if len(clips) > 1 else clips[0]
 
-def main():
+def update_window_texts(window: sg.Window, translations: Dict[str, str]) -> None:
+    window["-SELECT_FOLDER-"].update(get_translation("select_folder", translations))
+    window["-BROWSE-"].update(get_translation("browse", translations))
+    window["-DISPLAY_DURATION-"].update(get_translation("display_duration", translations))
+    window["-NUMBER_OF_LOOPS-"].update(get_translation("number_of_loops", translations))
+    window["-SHUFFLE-"].update(text=get_translation("shuffle_images", translations))
+    window["OK"].update(get_translation("generate_video", translations))
+    window["Cancel"].update(get_translation("cancel", translations))
+    window["-TOGGLE_LANGUAGE-"].update(get_translation("toggle_language", translations))
+    window["-DURATION-"].SetTooltip(get_translation("duration_tooltip", translations))
+    window["-LOOPS-"].SetTooltip(get_translation("loops_tooltip", translations))
+    window.set_title(get_translation("app_title", translations))
+
+def main(language='pt_BR'):
+    translations = load_translations(language)
+
     sg.theme('DefaultNoMoreNagging')
-    layout = create_layout()
-    window = sg.Window("Image to Video Converter", layout)
+    layout = create_layout(translations)
+    window = sg.Window(get_translation("app_title", translations), layout)
+
+    current_language = language
 
     while True:
         event, values = window.read()
         if event in (sg.WINDOW_CLOSED, 'Cancel'):
             break
+
+        if event == "-TOGGLE_LANGUAGE-":
+            current_language = 'pt_BR' if current_language == 'en' else 'en'
+            translations = load_translations(current_language)
+            update_window_texts(window, translations)
 
         if event == 'OK':
             folder_path = values["-FOLDER-"]
@@ -159,7 +191,7 @@ def main():
             shuffle_images = values["-SHUFFLE-"]
 
             if not folder_path:
-                sg.popup_error("Please select a folder with images.")
+                sg.popup_error(get_translation("select_folder_error", translations))
                 continue
 
             final_clip = process_video(folder_path, duration, num_loops, shuffle_images)
@@ -168,9 +200,9 @@ def main():
                 save_path = filedialog.asksaveasfilename(defaultextension=".mp4", filetypes=[("MP4 files", "*.mp4")])
                 if save_path:
                     final_clip.write_videofile(save_path, fps=30)
-                    sg.popup("Video saved successfully!")
+                    sg.popup(get_translation("video_saved", translations))
                 else:
-                    sg.popup("Operation cancelled. No video was saved.")
+                    sg.popup(get_translation("operation_cancelled", translations))
 
     window.close()
 

@@ -1,0 +1,13 @@
+{
+    "app_title": "Conversor de Imagem para Vídeo",
+    "select_folder": "Selecione uma pasta com quadros de imagem:",
+    "display_duration": "Duração da Exibição da Imagem (segundos):",
+    "number_of_loops": "Número de Repetições:",
+    "shuffle_images": "Embaralhar Imagens por Repetição",
+    "generate_video": "Gerar Vídeo",
+    "no_images_error": "Nenhuma imagem encontrada na pasta selecionada.",
+    "select_folder_error": "Por favor, selecione uma pasta com imagens.",
+    "video_saved": "Vídeo salvo com sucesso!",
+    "operation_cancelled": "Operação cancelada. Nenhum vídeo foi salvo.",
+    "toggle_language": "Trocar Idioma"
+}

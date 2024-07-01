@@ -1,0 +1,13 @@
+{
+    "app_title": "Image to Video Converter",
+    "select_folder": "Select a folder with image frames:",
+    "display_duration": "Duration of Image Display (seconds):",
+    "number_of_loops": "Number of Loops:",
+    "shuffle_images": "Shuffle Images per Loop",
+    "generate_video": "Generate Video",
+    "no_images_error": "No images found in the selected folder.",
+    "select_folder_error": "Please select a folder with images.",
+    "video_saved": "Video saved successfully!",
+    "operation_cancelled": "Operation cancelled. No video was saved.",
+    "toggle_language": "Toggle Language"
+}
