@@ -1,0 +1,11 @@
+# Ignore all temporary files
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# Ignore specific files or directories
+output.mp4
+
+# Ignore development tools
+.vscode/
