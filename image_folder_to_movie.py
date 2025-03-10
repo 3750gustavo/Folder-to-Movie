@@ -1,7 +1,7 @@
-# img folder to movie generator.py
+# image_folder_to_movie.py
 from package_manager import ensure_package
 
-ensure_package('moviepy')
+ensure_package('moviepy.editor', 'moviepy==1.0.3')
 ensure_package('PySimpleGUI', 'PySimpleGUI-4-foss==4.60.4.1')
 ensure_package('PIL', 'Pillow')
 
