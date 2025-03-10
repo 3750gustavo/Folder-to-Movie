@@ -16,6 +16,7 @@ from typing import List, Tuple, Optional, Dict
 from tkinter import filedialog
 
 def load_translations(language):
+    """Load translations from a JSON file based on the language."""
     if hasattr(sys, '_MEIPASS'):
         # When running as an executable, use the _MEIPASS directory
         file_path = os.path.join(sys._MEIPASS, 'translations', f"{language}.json")
@@ -26,9 +27,11 @@ def load_translations(language):
         return json.load(file)
 
 def get_translation(key, translations):
+    """Retrieve the translation for a given key, or return the key itself if not found."""
     return translations.get(key, key)
 
 def calculate_average_dimensions(images: List[Tuple[int, int]]) -> Tuple[int, int]:
+    """Calculate the average dimensions of the images."""
     total_width = total_height = 0
     for width, height in images:
         total_width += width
@@ -38,6 +41,7 @@ def calculate_average_dimensions(images: List[Tuple[int, int]]) -> Tuple[int, in
     return avg_width, avg_height
 
 def resize_image(image_path: str, avg_width: int, avg_height: int) -> str:
+    """Resize the image to the average dimensions and return the path of the resized image."""
     with Image.open(image_path) as img:
         width, height = img.size
 
@@ -159,6 +163,7 @@ def process_video(folder_path: str, duration: float, num_loops: int, shuffle_ima
     return mp.concatenate_videoclips(clips) if len(clips) > 1 else clips[0]
 
 def update_window_texts(window: sg.Window, translations: Dict[str, str]) -> None:
+    """Update the texts of the window elements based on the translations."""
     window["-SELECT_FOLDER-"].update(get_translation("select_folder", translations))
     window["-BROWSE-"].update(get_translation("browse", translations))
     window["-DISPLAY_DURATION-"].update(get_translation("display_duration", translations))
@@ -202,8 +207,15 @@ def main(language='pt_BR'):
 
             final_clip = process_video(folder_path, duration, num_loops, shuffle_images)
 
+            # Get the path of the first image in the folder
+            first_img_path = os.path.join(folder_path, os.listdir(folder_path)[0])
+
+            # Extract the folder name containing the images
+            first_folder_name = os.path.basename(os.path.dirname(first_img_path))
+            default_name = first_folder_name + ".mp4"
+
             if final_clip:
-                save_path = filedialog.asksaveasfilename(defaultextension=".mp4", filetypes=[("MP4 files", "*.mp4")])
+                save_path = filedialog.asksaveasfilename(defaultextension=".mp4", initialfile=default_name, filetypes=[("MP4 files", "*.mp4")])
                 if save_path:
                     final_clip.write_videofile(save_path, fps=30)
                     sg.popup(get_translation("video_saved", translations))
