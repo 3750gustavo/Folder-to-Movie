@@ -74,7 +74,7 @@ def resize_image(image_path: str, avg_width: int, avg_height: int) -> str:
                 new_height = avg_height
 
             # Resize the image
-            resized_img = img.resize((new_width, new_height), Image.ANTIALIAS)
+            resized_img = img.resize((new_width, new_height), Image.LANCZOS)
 
             # Create a bordered image if necessary
             if new_width != avg_width or new_height != avg_height:
