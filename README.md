@@ -54,7 +54,7 @@ That's it! Your images are now a video.
 
 ---
 
-## Requirements (package_manager.py should handle this for you)
+## Requirements (package_manager.py and start.bat should handle this for you)
 
 - Python 3.x
 - MoviePy
