@@ -2,7 +2,7 @@
 from package_manager import ensure_package
 
 ensure_package('moviepy')
-ensure_package('PySimpleGUI', 'PySimpleGUI==4.60.4')
+ensure_package('PySimpleGUI', 'PySimpleGUI-4-foss==4.60.4.1')
 ensure_package('PIL', 'Pillow')
 
 # import all required modules
