@@ -12,25 +12,30 @@ A Python script that converts a folder of images into a video, with options for 
 - **Aspect Ratio Maintenance**: Resizes images to maintain aspect ratio while fitting them to an average dimension.
 - **Bordered Images**: Creates bordered images if necessary to match the average dimensions.
 
-## Usage
+## Installation and Usage
+- For Windows users, you can simply run the `start.bat` file to start the application, at the first run it will install the required dependencies on a venv (isolated environment) and then ask you to press any key to continue before starting the application.
+- For Linux and macOS users, be sure to make the script executable before running:
+```bash
+chmod +x install.sh
+chmod +x start.sh
+```
 
-1. Run the script.
-2. Select the folder containing the images.
-3. Customize the duration, number of loops, and shuffle option.
-4. Choose a save location and name for the output video.
+- Then you can run the `start.sh` script to install dependencies and start the application.
 
-## Requirements
+### Using the Application
+- Select the folder containing the images.
+- Customize the duration, number of loops, and shuffle option.
+- Choose a save location and name for the output video.
+
+## Requirements (package_manager.py should handle this for you)
 
 - Python 3.x
 - MoviePy
-- PySimpleGUI (version 4.60.4 recommended)
+- PySimpleGUI (version 4.60.4 recommended as 5.x is paid)
 - Pillow (PIL)
 
-## Installation
+## Contributing
+Contributions are welcome! If you find any issues or have suggestions for improvements, please open an issue or submit a pull request.
 
-To install the required dependencies, run:
-
-```bash
-pip install moviepy pillow
-pip install PySimpleGUI==4.60.4
-```
+## License
+This project is licensed under the MIT License - see the LICENSE file for details.
